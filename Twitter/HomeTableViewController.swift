@@ -15,7 +15,7 @@ class HomeTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTweet()
+        self.loadTweet()
     }
 
     let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
@@ -33,6 +33,12 @@ class HomeTableViewController: UITableViewController {
             print("Could not retrieve tweet")
         })
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.loadTweet()
+    }
+    
     @IBAction func onLogout(_ sender: Any) {
         TwitterAPICaller.client?.logout()
         self.dismiss(animated: true, completion: nil)
@@ -45,6 +51,16 @@ class HomeTableViewController: UITableViewController {
         let user = tweetArray[indexPath.row]["user"] as! NSDictionary
         cell.userNameLabel.text = user["name"] as? String
         cell.tweetContent.text = tweetArray[indexPath.row]["text"] as? String
+        
+        let imageUrl = URL(string: (user["profile_image_url_https"] as? String)!)
+        let data = try? Data(contentsOf: imageUrl!)
+        if let imageData = data {
+            cell.profileImageView.image = UIImage(data: imageData)
+        }
+        
+        cell.setFavorite(_isFavorited: (tweetArray[indexPath.row]["favorited"] as! Bool))
+        cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
+        cell.setRetweeted(tweetArray[indexPath.row]["retweeted"] as! Bool)
         return cell
     }
     // MARK: - Table view data source
